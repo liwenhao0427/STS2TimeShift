@@ -190,8 +190,16 @@ internal partial class TimeShiftGridPatch : Control
 
     public override void _Input(InputEvent inputEvent)
     {
-        if (inputEvent is InputEventMouseButton mouseEvent && mouseEvent.Pressed)
+        if (inputEvent is InputEventMouseButton mouseEvent && mouseEvent.Pressed && !IsWheelButton(mouseEvent.ButtonIndex))
             RestoreOriginalCard($"鼠标点击({mouseEvent.ButtonIndex})", true);
+    }
+
+    private static bool IsWheelButton(MouseButton button)
+    {
+        return button == MouseButton.WheelUp
+            || button == MouseButton.WheelDown
+            || button == MouseButton.WheelLeft
+            || button == MouseButton.WheelRight;
     }
 
     public void RestoreOriginalCard(string reason, bool suppressPreviewUntilShiftRelease = false)
@@ -334,8 +342,16 @@ internal partial class TimeShiftHandPatch : Control
 
     public override void _Input(InputEvent inputEvent)
     {
-        if (inputEvent is InputEventMouseButton mouseEvent && mouseEvent.Pressed)
+        if (inputEvent is InputEventMouseButton mouseEvent && mouseEvent.Pressed && !IsWheelButton(mouseEvent.ButtonIndex))
             RestoreOriginalCard($"鼠标点击({mouseEvent.ButtonIndex})", true);
+    }
+
+    private static bool IsWheelButton(MouseButton button)
+    {
+        return button == MouseButton.WheelUp
+            || button == MouseButton.WheelDown
+            || button == MouseButton.WheelLeft
+            || button == MouseButton.WheelRight;
     }
 
     public void RestoreOriginalCard(string reason, bool suppressPreviewUntilShiftRelease = false)
