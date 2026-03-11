@@ -1,6 +1,7 @@
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Logging;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Cards;
@@ -44,6 +45,35 @@ internal static class NHandCardHolderPatch
     }
 }
 
+[HarmonyPatch]
+internal static class NCardPlayPatch
+{
+    [HarmonyPatch(typeof(NCardPlay), "TryPlayCard")]
+    [HarmonyPrefix]
+    private static void PrefixTryPlayCard(NCardPlay __instance)
+    {
+        TimeShiftPreviewHelper.RestoreHandPreviewIfNeeded(__instance.Holder, "TryPlayCard 前恢复");
+    }
+}
+
+internal static class TimeShiftPreviewHelper
+{
+    public static void RestoreHandPreviewIfNeeded(NHandCardHolder? holder, string reason)
+    {
+        if (holder == null)
+            return;
+
+        foreach (Node child in holder.GetChildren())
+        {
+            if (child is TimeShiftHandPatch handPatch)
+            {
+                handPatch.RestoreOriginalCard(reason);
+                return;
+            }
+        }
+    }
+}
+
 internal partial class TimeShiftGridPatch : Control
 {
     public NGridCardHolder? Holder { get; set; }
@@ -59,7 +89,7 @@ internal partial class TimeShiftGridPatch : Control
         MouseFilter = MouseFilterEnum.Ignore;
         _initialized = true;
         Log.Info($"[TimeShift] GridPatch._Ready: {Holder?.Name}");
-        
+
         if (Holder != null)
         {
             var field = Holder.GetType().GetField("_baseCard", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
@@ -127,23 +157,29 @@ internal partial class TimeShiftGridPatch : Control
 
     public override void _Input(InputEvent inputEvent)
     {
-        if (_isShowingPreview && inputEvent is InputEventMouseButton mouseEvent && mouseEvent.ButtonIndex == MouseButton.Left && mouseEvent.Pressed)
-        {
-            if (Holder?.CardNode != null && _baseCard != null)
-            {
-                Log.Info($"[TimeShift] Grid: 点击时恢复原始卡牌");
-                Holder.CardNode.Model = _baseCard;
-                Holder.CardNode.UpdateVisuals(Holder.CardNode.DisplayingPile, CardPreviewMode.Normal);
-                _isShowingPreview = false;
-                _wasShiftPressed = false;
-            }
-        }
+        if (inputEvent is InputEventMouseButton mouseEvent && mouseEvent.Pressed)
+            RestoreOriginalCard($"鼠标点击({mouseEvent.ButtonIndex})");
+    }
+
+    public void RestoreOriginalCard(string reason)
+    {
+        if (!_isShowingPreview)
+            return;
+
+        if (Holder?.CardNode == null || _baseCard == null)
+            return;
+
+        Log.Info($"[TimeShift] Grid: 恢复原始卡牌，原因={reason}");
+        Holder.CardNode.Model = _baseCard;
+        Holder.CardNode.UpdateVisuals(Holder.CardNode.DisplayingPile, CardPreviewMode.Normal);
+        _isShowingPreview = false;
+        _wasShiftPressed = false;
     }
 
     public override void _ExitTree()
     {
         Log.Info($"[TimeShift] GridPatch._ExitTree: {Holder?.Name}");
-        if (Holder != null && _baseCard != null)
+        if (Holder?.CardNode != null && _baseCard != null)
         {
             Holder.CardNode.Model = _baseCard;
             Holder.CardNode.UpdateVisuals(Holder.CardNode.DisplayingPile, CardPreviewMode.Normal);
@@ -244,17 +280,23 @@ internal partial class TimeShiftHandPatch : Control
 
     public override void _Input(InputEvent inputEvent)
     {
-        if (_isShowingPreview && inputEvent is InputEventMouseButton mouseEvent && mouseEvent.ButtonIndex == MouseButton.Left && mouseEvent.Pressed)
-        {
-            if (Holder?.CardNode != null && _baseCard != null)
-            {
-                Log.Info($"[TimeShift] Hand: 点击时恢复原始卡牌");
-                Holder.CardNode.Model = _baseCard;
-                Holder.CardNode.UpdateVisuals(Holder.CardNode.DisplayingPile, CardPreviewMode.Normal);
-                _isShowingPreview = false;
-                _wasShiftPressed = false;
-            }
-        }
+        if (inputEvent is InputEventMouseButton mouseEvent && mouseEvent.Pressed)
+            RestoreOriginalCard($"鼠标点击({mouseEvent.ButtonIndex})");
+    }
+
+    public void RestoreOriginalCard(string reason)
+    {
+        if (!_isShowingPreview)
+            return;
+
+        if (Holder?.CardNode == null || _baseCard == null)
+            return;
+
+        Log.Info($"[TimeShift] Hand: 恢复原始卡牌，原因={reason}");
+        Holder.CardNode.Model = _baseCard;
+        Holder.CardNode.UpdateVisuals(Holder.CardNode.DisplayingPile, CardPreviewMode.Normal);
+        _isShowingPreview = false;
+        _wasShiftPressed = false;
     }
 
     public override void _ExitTree()
