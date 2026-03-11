@@ -1,0 +1,11 @@
+.godot/
+.import/
+bin/
+obj/
+.vs/
+.idea/
+*.user
+*.suo
+*.tmp
+*.import
+DevDeckTools.pck
