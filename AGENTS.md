@@ -161,9 +161,5 @@
 - 本项目内置复制脚本：`copy_pck_to_game.ps1`。
 - 默认来源：`src/Mods/TimeShift/TimeShift.pck`
 - 默认目标：`E:\SteamLibrary\steamapps\common\Slay the Spire 2\mods\TimeShift\TimeShift.pck`
-- 执行示例（PowerShell）：`powershell -ExecutionPolicy Bypass -File .\copy_pck_to_game.ps1 -Deploy`
-- 备份示例（支持自定义名称）：`powershell -ExecutionPolicy Bypass -File .\copy_pck_to_game.ps1 -Backup -BackupName beforeBossFight`
-- 恢复示例（默认恢复到备份原路径）：`powershell -ExecutionPolicy Bypass -File .\copy_pck_to_game.ps1 -Restore -BackupName beforeBossFight`
-- 可选自定义恢复目标：`powershell -ExecutionPolicy Bypass -File .\copy_pck_to_game.ps1 -Restore -BackupName beforeBossFight -RestoreTo "<custom-path>"`
-- 交互菜单模式：`powershell -ExecutionPolicy Bypass -File .\copy_pck_to_game.ps1 -Interactive`
-- 说明：脚本会自动创建目标目录并覆盖同名文件；恢复时会显示默认恢复目标（mod 回 mod，nonmod 回 nonmod），也支持手动改目标。
+- 执行示例（PowerShell）：`powershell -ExecutionPolicy Bypass -File .\copy_pck_to_game.ps1`
+- 说明：脚本会自动创建目标目录并覆盖同名文件。
