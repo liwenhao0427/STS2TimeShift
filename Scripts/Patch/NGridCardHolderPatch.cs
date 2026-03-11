@@ -78,6 +78,7 @@ internal partial class TimeShiftGridPatch : Control
 {
     public NGridCardHolder? Holder { get; set; }
     private bool _wasShiftPressed = false;
+    private bool _suppressPreviewUntilShiftRelease = false;
     private bool _initialized = false;
     private CardModel? _baseCard;
     private CardModel? _upgradedCard;
@@ -112,6 +113,23 @@ internal partial class TimeShiftGridPatch : Control
             return;
 
         bool shiftPressed = Input.IsKeyPressed(Key.Shift);
+
+        if (_suppressPreviewUntilShiftRelease)
+        {
+            if (!shiftPressed)
+            {
+                _suppressPreviewUntilShiftRelease = false;
+                _wasShiftPressed = false;
+                Log.Info("[TimeShift] Grid: Shift 已松开，解除点击后的预览抑制");
+            }
+            else
+            {
+                if (_isShowingPreview)
+                    RestoreOriginalCard("预览抑制期间兜底恢复");
+
+                return;
+            }
+        }
 
         if (shiftPressed != _wasShiftPressed)
         {
@@ -158,10 +176,10 @@ internal partial class TimeShiftGridPatch : Control
     public override void _Input(InputEvent inputEvent)
     {
         if (inputEvent is InputEventMouseButton mouseEvent && mouseEvent.Pressed)
-            RestoreOriginalCard($"鼠标点击({mouseEvent.ButtonIndex})");
+            RestoreOriginalCard($"鼠标点击({mouseEvent.ButtonIndex})", true);
     }
 
-    public void RestoreOriginalCard(string reason)
+    public void RestoreOriginalCard(string reason, bool suppressPreviewUntilShiftRelease = false)
     {
         if (!_isShowingPreview)
             return;
@@ -174,6 +192,9 @@ internal partial class TimeShiftGridPatch : Control
         Holder.CardNode.UpdateVisuals(Holder.CardNode.DisplayingPile, CardPreviewMode.Normal);
         _isShowingPreview = false;
         _wasShiftPressed = false;
+
+        if (suppressPreviewUntilShiftRelease)
+            _suppressPreviewUntilShiftRelease = true;
     }
 
     public override void _ExitTree()
@@ -192,6 +213,7 @@ internal partial class TimeShiftHandPatch : Control
 {
     public NHandCardHolder? Holder { get; set; }
     private bool _wasShiftPressed = false;
+    private bool _suppressPreviewUntilShiftRelease = false;
     private bool _initialized = false;
     private CardModel? _baseCard;
     private CardModel? _upgradedCard;
@@ -235,6 +257,23 @@ internal partial class TimeShiftHandPatch : Control
             return;
 
         bool shiftPressed = Input.IsKeyPressed(Key.Shift);
+
+        if (_suppressPreviewUntilShiftRelease)
+        {
+            if (!shiftPressed)
+            {
+                _suppressPreviewUntilShiftRelease = false;
+                _wasShiftPressed = false;
+                Log.Info("[TimeShift] Hand: Shift 已松开，解除点击后的预览抑制");
+            }
+            else
+            {
+                if (_isShowingPreview)
+                    RestoreOriginalCard("预览抑制期间兜底恢复");
+
+                return;
+            }
+        }
 
         if (shiftPressed != _wasShiftPressed)
         {
@@ -281,10 +320,10 @@ internal partial class TimeShiftHandPatch : Control
     public override void _Input(InputEvent inputEvent)
     {
         if (inputEvent is InputEventMouseButton mouseEvent && mouseEvent.Pressed)
-            RestoreOriginalCard($"鼠标点击({mouseEvent.ButtonIndex})");
+            RestoreOriginalCard($"鼠标点击({mouseEvent.ButtonIndex})", true);
     }
 
-    public void RestoreOriginalCard(string reason)
+    public void RestoreOriginalCard(string reason, bool suppressPreviewUntilShiftRelease = false)
     {
         if (!_isShowingPreview)
             return;
@@ -297,6 +336,9 @@ internal partial class TimeShiftHandPatch : Control
         Holder.CardNode.UpdateVisuals(Holder.CardNode.DisplayingPile, CardPreviewMode.Normal);
         _isShowingPreview = false;
         _wasShiftPressed = false;
+
+        if (suppressPreviewUntilShiftRelease)
+            _suppressPreviewUntilShiftRelease = true;
     }
 
     public override void _ExitTree()
