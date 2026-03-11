@@ -90,24 +90,39 @@ internal partial class TimeShiftGridPatch : Control
         MouseFilter = MouseFilterEnum.Ignore;
         _initialized = true;
         Log.Info($"[TimeShift] GridPatch._Ready: {Holder?.Name}");
+        SyncGridCards();
+    }
 
-        if (Holder != null)
+    private void SyncGridCards()
+    {
+        if (Holder?.CardNode == null)
+            return;
+
+        CardModel currentBaseCard = Holder.CardModel;
+        if (ReferenceEquals(currentBaseCard, _baseCard))
+            return;
+
+        _baseCard = currentBaseCard;
+        _upgradedCard = null;
+
+        if (_baseCard.IsUpgradable)
         {
-            var field = Holder.GetType().GetField("_baseCard", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            _baseCard = field?.GetValue(Holder) as CardModel;
-            if (_baseCard?.IsUpgradable == true)
-            {
-                _upgradedCard = (CardModel)_baseCard.MutableClone();
-                _upgradedCard.UpgradeInternal();
-                Log.Info($"[TimeShift] Grid init: base={_baseCard.Id}, upgraded={_upgradedCard.Id}, baseIsUpgraded={_baseCard.IsUpgraded}");
-            }
+            _upgradedCard = (CardModel)_baseCard.MutableClone();
+            _upgradedCard.UpgradeInternal();
         }
+
+        _isShowingPreview = false;
+        _wasShiftPressed = false;
+
+        Log.Info($"[TimeShift] Grid sync: base={_baseCard.Id}, hasUpgraded={_upgradedCard != null}, baseIsUpgraded={_baseCard.IsUpgraded}");
     }
 
     public override void _Process(double delta)
     {
         if (!_initialized || Holder == null || Holder.CardNode == null)
             return;
+
+        SyncGridCards();
 
         if (_baseCard == null || !_baseCard.IsUpgradable)
             return;
