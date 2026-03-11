@@ -66,6 +66,15 @@ dotnet test <TestProject.csproj> --filter "FullyQualifiedName~Namespace.Class.Me
 - 关键前缀：`[TimeShift]`
 - 建议使用 `Log.Info`（`Log.Debug` 默认不可见）
 
+## 整合包下载
+
+- 夸克网盘链接（含 Mod 管理器与 `Mods` 目录）：
+  - `https://pan.quark.cn/s/b89dbac25ba4`
+- 分享口令：`/~88063M0Ul6~:/`
+- 使用方式：
+  - 可直接下载整合包，使用其中的 Mod 管理器。
+  - 也可只下载其中的 `Mods` 目录，手动复制到游戏根目录（`Slay the Spire 2`）下覆盖/合并。
+
 ## 已知注意事项
 
 - 预览使用克隆卡仅用于展示，不能进入真实战斗/奖励结算路径。
