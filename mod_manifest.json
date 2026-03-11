@@ -1,0 +1,7 @@
+{
+  "pck_name": "timeshift",
+  "name": "Time Shift",
+  "author": "YourName",
+  "description": "按住 Shift 键预览卡牌的升级版/基础版",
+  "version": "0.0.1"
+}
