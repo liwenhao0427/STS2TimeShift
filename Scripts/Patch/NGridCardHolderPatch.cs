@@ -1,3 +1,5 @@
+using System.Reflection;
+
 using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Entities.Cards;
@@ -6,6 +8,7 @@ using MegaCrit.Sts2.Core.Logging;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Cards;
 using MegaCrit.Sts2.Core.Nodes.Cards.Holders;
+using MegaCrit.Sts2.Core.Nodes.Screens.Shops;
 
 namespace TimeShift.Scripts.Patch;
 
@@ -56,6 +59,21 @@ internal static class NCardPlayPatch
     }
 }
 
+[HarmonyPatch]
+internal static class NMerchantCardPatch
+{
+    [HarmonyPatch(typeof(NMerchantCard), nameof(NMerchantCard._Ready))]
+    [HarmonyPatch(MethodType.Normal)]
+    [HarmonyPostfix]
+    private static void PostfixOnReady(NMerchantCard __instance)
+    {
+        Log.Info("[TimeShift] NMerchantCard._Ready");
+        var processPatch = new TimeShiftMerchantPatch();
+        processPatch.Holder = __instance;
+        __instance.AddChild(processPatch);
+    }
+}
+
 internal static class TimeShiftPreviewHelper
 {
     public static void RestoreHandPreviewIfNeeded(NHandCardHolder? holder, string reason)
@@ -71,6 +89,190 @@ internal static class TimeShiftPreviewHelper
                 return;
             }
         }
+    }
+}
+
+internal partial class TimeShiftMerchantPatch : Control
+{
+    private static readonly FieldInfo MerchantCardNodeField = typeof(NMerchantCard).GetField("_cardNode", BindingFlags.NonPublic | BindingFlags.Instance)!;
+
+    public NMerchantCard? Holder { get; set; }
+    private bool _wasShiftPressed = false;
+    private bool _suppressPreviewUntilShiftRelease = false;
+    private bool _initialized = false;
+    private NCard? _cardNode;
+    private CardModel? _baseCard;
+    private CardModel? _upgradedCard;
+    private bool _isShowingPreview = false;
+
+    public override void _Ready()
+    {
+        base._Ready();
+        MouseFilter = MouseFilterEnum.Ignore;
+        _initialized = true;
+        Log.Info("[TimeShift] MerchantPatch._Ready");
+        SyncMerchantCard();
+    }
+
+    private void SyncMerchantCard()
+    {
+        if (Holder == null)
+            return;
+
+        NCard? currentCardNode = MerchantCardNodeField.GetValue(Holder) as NCard;
+        if (currentCardNode == null)
+        {
+            _cardNode = null;
+            _baseCard = null;
+            _upgradedCard = null;
+            _isShowingPreview = false;
+            _wasShiftPressed = false;
+            return;
+        }
+
+        if (!ReferenceEquals(currentCardNode, _cardNode))
+        {
+            CardModel? currentBaseCard = currentCardNode.Model;
+            if (currentBaseCard == null)
+            {
+                _cardNode = currentCardNode;
+                _baseCard = null;
+                _upgradedCard = null;
+                _isShowingPreview = false;
+                _wasShiftPressed = false;
+                return;
+            }
+
+            _cardNode = currentCardNode;
+            _baseCard = currentBaseCard;
+            _upgradedCard = null;
+
+            if (_baseCard.IsUpgradable)
+            {
+                _upgradedCard = (CardModel)_baseCard.MutableClone();
+                _upgradedCard.UpgradeInternal();
+            }
+
+            _isShowingPreview = false;
+            _wasShiftPressed = false;
+
+            Log.Info($"[TimeShift] Merchant sync: base={_baseCard.Id}, hasUpgraded={_upgradedCard != null}, baseIsUpgraded={_baseCard.IsUpgraded}");
+            return;
+        }
+
+        CardModel? liveCardModel = _cardNode.Model;
+        if (!_isShowingPreview && liveCardModel != null && !ReferenceEquals(liveCardModel, _baseCard))
+        {
+            _baseCard = liveCardModel;
+            _upgradedCard = null;
+            if (_baseCard.IsUpgradable)
+            {
+                _upgradedCard = (CardModel)_baseCard.MutableClone();
+                _upgradedCard.UpgradeInternal();
+            }
+        }
+    }
+
+    public override void _Process(double delta)
+    {
+        if (!_initialized || Holder == null)
+            return;
+
+        SyncMerchantCard();
+        if (_cardNode == null || _baseCard == null || !_baseCard.IsUpgradable)
+            return;
+
+        bool shiftPressed = Input.IsKeyPressed(Key.Shift);
+
+        if (_suppressPreviewUntilShiftRelease)
+        {
+            if (!shiftPressed)
+            {
+                _suppressPreviewUntilShiftRelease = false;
+                _wasShiftPressed = false;
+                Log.Info("[TimeShift] Merchant: Shift 已松开，解除点击后的预览抑制");
+            }
+            else
+            {
+                if (_isShowingPreview)
+                    RestoreOriginalCard("预览抑制期间兜底恢复");
+
+                return;
+            }
+        }
+
+        if (shiftPressed != _wasShiftPressed)
+        {
+            _wasShiftPressed = shiftPressed;
+            bool isBaseUpgraded = _baseCard.IsUpgraded;
+            Log.Info($"[TimeShift] Merchant: shift={shiftPressed}, base={_baseCard.Id}, isBaseUpgraded={isBaseUpgraded}");
+
+            if (shiftPressed)
+            {
+                if (isBaseUpgraded)
+                {
+                    _cardNode.Model = _baseCard;
+                    _cardNode.UpdateVisuals(_cardNode.DisplayingPile, CardPreviewMode.Normal);
+                    Log.Info("[TimeShift] Merchant: 显示基础版（原始已升级）");
+                }
+                else if (_upgradedCard != null)
+                {
+                    _cardNode.Model = _upgradedCard;
+                    _cardNode.ShowUpgradePreview();
+                    Log.Info("[TimeShift] Merchant: 显示升级版");
+                }
+
+                _isShowingPreview = true;
+            }
+            else
+            {
+                RestoreOriginalCard("Shift 松开");
+            }
+        }
+    }
+
+    public override void _Input(InputEvent inputEvent)
+    {
+        if (inputEvent is InputEventMouseButton mouseEvent && mouseEvent.Pressed && !IsWheelButton(mouseEvent.ButtonIndex))
+            RestoreOriginalCard($"鼠标点击({mouseEvent.ButtonIndex})", true);
+    }
+
+    private static bool IsWheelButton(MouseButton button)
+    {
+        return button == MouseButton.WheelUp
+            || button == MouseButton.WheelDown
+            || button == MouseButton.WheelLeft
+            || button == MouseButton.WheelRight;
+    }
+
+    public void RestoreOriginalCard(string reason, bool suppressPreviewUntilShiftRelease = false)
+    {
+        if (!_isShowingPreview)
+            return;
+
+        if (_cardNode == null || _baseCard == null)
+            return;
+
+        Log.Info($"[TimeShift] Merchant: 恢复原始卡牌，原因={reason}");
+        _cardNode.Model = _baseCard;
+        _cardNode.UpdateVisuals(_cardNode.DisplayingPile, CardPreviewMode.Normal);
+        _isShowingPreview = false;
+        _wasShiftPressed = false;
+
+        if (suppressPreviewUntilShiftRelease)
+            _suppressPreviewUntilShiftRelease = true;
+    }
+
+    public override void _ExitTree()
+    {
+        Log.Info($"[TimeShift] MerchantPatch._ExitTree: isPreview={_isShowingPreview}");
+        if (_isShowingPreview && _cardNode != null && _baseCard != null)
+        {
+            _cardNode.Model = _baseCard;
+            _cardNode.UpdateVisuals(_cardNode.DisplayingPile, CardPreviewMode.Normal);
+        }
+
+        base._ExitTree();
     }
 }
 
