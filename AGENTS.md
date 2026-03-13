@@ -163,3 +163,10 @@
 - 默认目标：`E:\SteamLibrary\steamapps\common\Slay the Spire 2\mods\TimeShift\TimeShift.pck`
 - 执行示例（PowerShell）：`powershell -ExecutionPolicy Bypass -File .\copy_pck_to_game.ps1`
 - 说明：脚本会自动创建目标目录并覆盖同名文件。
+
+## 15. Release 发布约定
+
+- 发版时必须同时上传两个产物：`TimeShift.pck` 与 `TimeShift.dll`。
+- 推荐先执行：`dotnet build TimeShift.csproj -c Release`，再创建 Release。
+- `TimeShift.dll` 来源目录：`src/Mods/TimeShift/build/Release/TimeShift.dll`。
+- `TimeShift.pck` 来源目录：`src/Mods/TimeShift/TimeShift.pck`。
