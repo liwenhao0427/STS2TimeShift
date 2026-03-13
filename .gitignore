@@ -5,6 +5,8 @@
 # .NET build outputs
 bin/
 obj/
+build/
+TimeShift.sln
 
 # Local export artifact
 TimeShift.pck
