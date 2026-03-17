@@ -170,3 +170,13 @@
 - 推荐先执行：`dotnet build TimeShift.csproj -c Release`，再创建 Release。
 - `TimeShift.dll` 来源目录：`src/Mods/TimeShift/build/Release/TimeShift.dll`。
 - `TimeShift.pck` 来源目录：`src/Mods/TimeShift/TimeShift.pck`。
+
+## 16. GiftGold 快速发布（不重新打包 DLL/PCK）
+
+- 目标：仅发布 GiftGold 模组的新 JSON 配置文件，同时保留现有 DLL/PCK，遵循更新规范，不触发重新打包流程。
+- 相关文件：`src/Mods/TimeShift/GiftGold.dll.json`（同 DLL 名称后缀为 .dll.json）。
+- 发布步骤（推荐顺序）：
+  1) 为当前版本打标签：`git tag v1.01`；若已存在，请跳过。 
+  2) 推送标签至远端：`git push origin v1.01`（以及推送分支变动，如有）。
+  3) 发布 Release：`gh release create v1.01 --title "GiftGold v1.01" --notes "Release GiftGold mod config; no rebuild of DLL/PCK" src/Mods/TimeShift/GiftGold.dll.json`。
+- 验证要点：GitHub Release 页面显示新 Release，附带 GiftGold.dll.json 作为资产。

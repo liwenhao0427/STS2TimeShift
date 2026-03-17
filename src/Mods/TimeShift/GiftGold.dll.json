@@ -1,0 +1,11 @@
+{
+  "id": "GiftGold",
+  "name": "GiftGold",
+  "author": "Blz",
+  "description": "You can give your gold to others",
+  "version": "v1.01",
+  "has_pck": false,
+  "has_dll": true,
+  "dependencies": [],
+  "affects_gameplay": true
+}
