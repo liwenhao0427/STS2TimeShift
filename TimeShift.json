@@ -3,7 +3,7 @@
   "name": "TimeShift",
   "author": "磁石战士Ω",
   "description": "按住 Shift 键预览卡牌的升级版/基础版",
-  "version": "v0.0.2",
+  "version": "v0.1",
   "has_pck": true,
   "has_dll": true,
   "dependencies": [],

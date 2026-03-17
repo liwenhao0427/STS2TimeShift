@@ -170,6 +170,7 @@
 - 推荐先执行：`dotnet build TimeShift.csproj -c Release`，再创建 Release。
 - `TimeShift.dll` 来源目录：`src/Mods/TimeShift/build/Release/TimeShift.dll`。
 - `TimeShift.pck` 来源目录：`src/Mods/TimeShift/TimeShift.pck`。
+- 版本号策略：每次发布前必须将版本号递增（至少同步更新 `mod_manifest.json` 与 `TimeShift.json` 的 `version` 字段）。
 
 ## 16. JSON 发布规范（新）
 
@@ -193,7 +194,7 @@
   "name": "TimeShift",
   "author": "磁石战士Ω",
   "description": "按住 Shift 键预览卡牌的升级版/基础版",
-  "version": "v0.0.2",
+  "version": "v0.1",
   "has_pck": true,
   "has_dll": true,
   "dependencies": [],
