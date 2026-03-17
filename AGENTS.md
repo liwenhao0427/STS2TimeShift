@@ -171,10 +171,10 @@
 - `TimeShift.dll` 来源目录：`src/Mods/TimeShift/build/Release/TimeShift.dll`。
 - `TimeShift.pck` 来源目录：`src/Mods/TimeShift/TimeShift.pck`。
 
-## 16. DLL 同名 JSON 发布规范（新）
+## 16. JSON 发布规范（新）
 
-- 发版时除 `TimeShift.pck` 与 `TimeShift.dll` 外，必须同时发布与 DLL 同名的 JSON：`TimeShift.dll.json`。
-- JSON 文件命名规则：`<DllFileName>.json`，例如 `TimeShift.dll` 对应 `TimeShift.dll.json`。
+- 发版时除 `TimeShift.pck` 与 `TimeShift.dll` 外，必须同时发布 JSON 配置文件：`TimeShift.json`。
+- JSON 文件命名规则：`<ModId>.json`，TimeShift 固定使用 `TimeShift.json`（不使用 `.dll.json` 后缀）。
 - JSON 内容字段固定为：
   - `id`（字符串）
   - `name`（字符串）
@@ -202,6 +202,6 @@
 ```
 
 - 不重新打包快速发布（仅更新配置）：
-  1) 确认 `TimeShift.dll.json` 内容正确并提交。
-  2) 直接创建 Release 并上传现有产物：`TimeShift.pck`、`build/Release/TimeShift.dll`、`TimeShift.dll.json`。
+  1) 确认 `TimeShift.json` 内容正确并提交。
+  2) 直接创建 Release 并上传现有产物：`TimeShift.pck`、`build/Release/TimeShift.dll`、`TimeShift.json`。
   3) 同步复制到游戏目录：`E:\SteamLibrary\steamapps\common\Slay the Spire 2\mods\TimeShift\`。
