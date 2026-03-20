@@ -1,7 +1,8 @@
-{
+﻿{
   "pck_name": "timeshift",
   "name": "Time Shift",
   "author": "磁石战士Ω",
   "description": "按住 Shift 键预览卡牌的升级版/基础版",
-  "version": "0.1"
+  "version": "0.1.1"
 }
+

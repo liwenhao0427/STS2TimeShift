@@ -1,9 +1,9 @@
-{
+﻿{
   "id": "TimeShift",
   "name": "Shift预览升级卡牌",
   "author": "磁石战士Ω",
   "description": "按住 Shift 可在升级/未升级版本间快速预览卡牌，属于信息预览类便捷功能。",
-  "version": "v0.1",
+  "version": "v0.1.1",
   "tag": "体验优化",
   "detail": "按住 Shift 使用，预览各处的卡牌",
   "remark": "如果未升级则预览升级版，否则预览未升级版",
@@ -16,3 +16,4 @@
   "dependencies": [],
   "affects_gameplay": false
 }
+
