@@ -167,6 +167,7 @@
 ## 15. Release 发布约定
 
 - 发版时必须同时上传两个产物：`TimeShift.pck` 与 `TimeShift.dll`。
+- 发版时还必须上传 `TimeShift.json`，且 JSON 中的 `download_url`、`detail_url`、`social_url` 等链接字段需同步为最新可用地址。
 - 推荐先执行：`dotnet build TimeShift.csproj -c Release`，再创建 Release。
 - `TimeShift.dll` 来源目录：`src/Mods/TimeShift/build/Release/TimeShift.dll`。
 - `TimeShift.pck` 来源目录：`src/Mods/TimeShift/TimeShift.pck`。
@@ -206,3 +207,4 @@
   1) 确认 `TimeShift.json` 内容正确并提交。
   2) 直接创建 Release 并上传现有产物：`TimeShift.pck`、`build/Release/TimeShift.dll`、`TimeShift.json`。
   3) 同步复制到游戏目录：`E:\SteamLibrary\steamapps\common\Slay the Spire 2\mods\TimeShift\`。
+  4) 额外复制一份到游戏根目录：`E:\SteamLibrary\steamapps\common\Slay the Spire 2\TimeShift.json`。
